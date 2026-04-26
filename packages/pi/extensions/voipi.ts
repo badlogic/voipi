@@ -93,14 +93,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
         await mkdir(dirname(outputFile), { recursive: true });
-        try {
-          await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
-        } catch (error) {
-          if (isAbortError(error)) {
-            return createAbortedSpeakResult(text, tts.name, params, { action: "save", outputFile });
-          }
-          throw error;
-        }
+        await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
 
         return {
           content: [
@@ -121,14 +114,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
         };
       }
 
-      try {
-        await suppressPiperConsoleOutput(() => tts.speak(text, options));
-      } catch (error) {
-        if (isAbortError(error)) {
-          return createAbortedSpeakResult(text, tts.name, params, { action: "speak" });
-        }
-        throw error;
-      }
+      await suppressPiperConsoleOutput(() => tts.speak(text, options));
 
       return {
         content: [
@@ -287,38 +273,6 @@ async function createProvider(provider = "auto") {
   }
 
   return factory();
-}
-
-function createAbortedSpeakResult(
-  text: string,
-  provider: string,
-  params: SpeakParams,
-  abortDetails: { action: "speak" | "save"; outputFile?: string },
-) {
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: `Speech aborted using ${provider}.\n\nText:\n${text}`,
-      },
-    ],
-    details: {
-      action: abortDetails.action,
-      aborted: true,
-      provider,
-      voice: params.voice,
-      lang: params.lang,
-      rate: params.rate,
-      outputFile: abortDetails.outputFile,
-      characters: text.length,
-    },
-  };
-}
-
-function isAbortError(error: unknown): boolean {
-  if (error instanceof DOMException && error.name === "AbortError") return true;
-  if (error instanceof Error && error.name === "AbortError") return true;
-  return false;
 }
 
 function renderSpeakCall(_params: SpeakParams, theme: RenderTheme): string {

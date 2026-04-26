@@ -93,7 +93,11 @@ export default function voipiExtension(pi: ExtensionAPI) {
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
         await mkdir(dirname(outputFile), { recursive: true });
-        await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
+        try {
+          await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
+        } catch (error) {
+          throw enrichAbortError(error, text);
+        }
 
         return {
           content: [
@@ -114,7 +118,11 @@ export default function voipiExtension(pi: ExtensionAPI) {
         };
       }
 
-      await suppressPiperConsoleOutput(() => tts.speak(text, options));
+      try {
+        await suppressPiperConsoleOutput(() => tts.speak(text, options));
+      } catch (error) {
+        throw enrichAbortError(error, text);
+      }
 
       return {
         content: [
@@ -273,6 +281,19 @@ async function createProvider(provider = "auto") {
   }
 
   return factory();
+}
+
+function enrichAbortError(error: unknown, text: string): unknown {
+  if (!isAbortError(error)) return error;
+  const enriched = new Error(`This operation was aborted\n\nText:\n${text}`);
+  enriched.name = "AbortError";
+  return enriched;
+}
+
+function isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  if (error instanceof Error && error.name === "AbortError") return true;
+  return false;
 }
 
 function renderSpeakCall(_params: SpeakParams, theme: RenderTheme): string {

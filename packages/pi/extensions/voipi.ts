@@ -85,6 +85,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
               text: `Saved speech to ${outputFile} using ${tts.name}.\n\nText:\n${text}`,
             },
           ],
+          terminate: true,
           details: {
             action: "save",
             provider: tts.name,
@@ -106,6 +107,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
             text: `Played speech aloud using ${tts.name}.\n\nText:\n${text}`,
           },
         ],
+        terminate: true,
         details: {
           action: "speak",
           provider: tts.name,

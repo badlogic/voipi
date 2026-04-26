@@ -275,16 +275,8 @@ async function createProvider(provider = "auto") {
   return factory();
 }
 
-function renderSpeakCall(params: SpeakParams, theme: RenderTheme): string {
-  const parts = [theme.fg("toolTitle", theme.bold("voipi_speak"))];
-  const text = truncateSingleLine(params.text, 120);
-  parts.push(theme.fg("dim", `"${text}"`));
-  if (params.provider) parts.push(theme.fg("muted", `provider=${params.provider}`));
-  if (params.voice) parts.push(theme.fg("muted", `voice=${params.voice}`));
-  if (params.lang) parts.push(theme.fg("muted", `lang=${params.lang}`));
-  if (params.rate !== undefined) parts.push(theme.fg("muted", `rate=${params.rate}`));
-  if (params.outputFile) parts.push(theme.fg("muted", `output=${params.outputFile}`));
-  return parts.join(" ");
+function renderSpeakCall(_params: SpeakParams, theme: RenderTheme): string {
+  return theme.fg("toolTitle", theme.bold("voipi_speak"));
 }
 
 function renderListVoicesCall(params: ListVoicesParams, theme: RenderTheme): string {

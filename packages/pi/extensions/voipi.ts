@@ -72,6 +72,23 @@ export default function voipiExtension(pi: ExtensionAPI) {
 
       const tts = await createProvider(params.provider);
       const options = toSpeakOptions(params, signal);
+      _onUpdate?.({
+        content: [
+          {
+            type: "text",
+            text: `Preparing speech using ${tts.name}.\n\nText:\n${text}`,
+          },
+        ],
+        details: {
+          action: params.outputFile ? "save" : "speak",
+          provider: tts.name,
+          voice: params.voice,
+          lang: params.lang,
+          rate: params.rate,
+          outputFile: params.outputFile,
+          characters: text.length,
+        },
+      });
 
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
@@ -85,7 +102,6 @@ export default function voipiExtension(pi: ExtensionAPI) {
               text: `Saved speech to ${outputFile} using ${tts.name}.\n\nText:\n${text}`,
             },
           ],
-          terminate: true,
           details: {
             action: "save",
             provider: tts.name,
